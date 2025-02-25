@@ -18,7 +18,11 @@ html {
   font-size: 16px;
 }
 
-body, textarea, select, input, select > option:hover {
+body,
+textarea,
+select,
+input,
+select > option:hover {
   background-color: var(--main-bg-color);
   color: var(--main-fg-color);
 }
@@ -152,7 +156,9 @@ input {
   box-sizing: border-box;
 }
 
-a, a:visited, a:hover {
+a,
+a:visited,
+a:hover {
   text-decoration: none;
 }
 
@@ -251,17 +257,19 @@ td.line-number {
   text-align: right;
 }
 
-.line-number > a, .line-number > a:visited {
+.line-number > a,
+.line-number > a:visited {
   color: var(--main-line-number-color);
 }
 
-.line-number > a:hover, .line-number > a:focus {
+.line-number > a:hover,
+.line-number > a:focus {
   color: var(--main-highlight-color);
 }
 
 .line {
-  word-wrap: normal;
-  white-space: pre;
+  word-wrap: break-word;
+  white-space: pre-wrap;
   margin-top: 0px;
   margin-bottom: 0px;
   user-select: text;
@@ -279,4 +287,31 @@ td.line-number {
 .text-link {
   color: var(--main-accent-color);
   font-weight: bold;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--main-accent-color) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--main-accent-color) 60%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--main-accent-color);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
