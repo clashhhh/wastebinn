@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  wastebin:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: ${DOCKERFILE:-Dockerfile}
+    environment:
+      - WASTEBIN_DATABASE_PATH=${WASTEBIN_DATABASE_PATH:-/data/state.db}
+      - WASTEBIN_TITLE=${WASTEBIN_TITLE:-bin}
+      - WASTEBIN_SIGNING_KEY=${WASTEBIN_SIGNING_KEY}
+      - WASTEBIN_PASSWORD_SALT=${WASTEBIN_PASSWORD_SALT}
+    ports:
+      - "${PORT:-8088}:8088"
+    volumes:
+      - "${DATA_DIR:-./data}:/data"
