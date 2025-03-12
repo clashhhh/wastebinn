@@ -12,4 +12,8 @@ services:
     ports:
       - "${PORT:-8088}:8088"
     volumes:
-      - "${DATA_DIR:-./data}:/data"
+      - wastebin_data:/data
+
+volumes:
+  wastebin_data:
+    name: wastebin_data
