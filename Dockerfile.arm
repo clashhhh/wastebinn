@@ -3,7 +3,7 @@ FROM rust:1.85 AS builder
 
 RUN rustup target add aarch64-unknown-linux-musl && \
     apt-get update && \
-    apt-get install -y musl-tools musl-dev && \
+    apt-get install -y musl-tools musl-dev sqlite3 && \
     update-ca-certificates
 
 ENV USER=app
@@ -15,6 +15,10 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     "${USER}"
+
+RUN mkdir -p /data && chown -R app:app /data && \
+    sqlite3 /data/state.db "VACUUM;" && \
+    chown app:app /data/state.db
 
 WORKDIR /app
 COPY . .
@@ -33,5 +37,7 @@ COPY --from=builder /etc/group /etc/group
 
 WORKDIR /app
 COPY --from=builder /app/wastebin .
+COPY --from=builder --chown=app:app /data /data
+
 USER app:app
 CMD ["/app/wastebin"]
