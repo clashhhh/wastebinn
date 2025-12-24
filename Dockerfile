@@ -1,49 +1,43 @@
 # --- build image
 FROM rust:1.85 AS builder
 
-RUN rustup target add x86_64-unknown-linux-musl
-
-# 🔧 add missing native deps
-RUN apt update && apt install -y \
-    musl-tools \
-    musl-dev \
-    pkg-config \
-    libssl-dev \
-    ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-# 🔧 required for musl + openssl
-ENV OPENSSL_STATIC=1
-ENV OPENSSL_DIR=/usr
+RUN rustup target add aarch64-unknown-linux-musl && \
+    apt-get update && \
+    apt-get install -y musl-tools musl-dev sqlite3 && \
+    update-ca-certificates
 
 ENV USER=app
 ENV UID=10001
 
 RUN adduser \
     --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
     --shell "/sbin/nologin" \
     --no-create-home \
     --uid "${UID}" \
     "${USER}"
 
+RUN mkdir -p /data && chown -R app:app /data && \
+    sqlite3 /data/state.db "VACUUM;" && \
+    chown app:app /data/state.db
+
 WORKDIR /app
 COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo build --release && mv /app/target/release/wastebin /app
 
-# build
-RUN cargo build --target x86_64-unknown-linux-musl --release
-
-
-# --- final image
 FROM scratch
 
+COPY --from=builder /lib/aarch64-linux-gnu/libgcc_s.so.1 /lib/aarch64-linux-gnu/libgcc_s.so.1
+COPY --from=builder /lib/aarch64-linux-gnu/libm.so.6 /lib/aarch64-linux-gnu/libm.so.6
+COPY --from=builder /lib/aarch64-linux-gnu/libc.so.6 /lib/aarch64-linux-gnu/libc.so.6
+COPY --from=builder /lib/ld-linux-aarch64.so.1 /lib/ld-linux-aarch64.so.1
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 WORKDIR /app
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/wastebin ./
+COPY --from=builder /app/wastebin .
+COPY --from=builder --chown=app:app /data /data
 
 USER app:app
 CMD ["/app/wastebin"]
